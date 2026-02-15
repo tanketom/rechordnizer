@@ -1,3 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rechordnizer</title>
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #1a1a2e;
+    color: #eee;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+}
+
+h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #e94560;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.status {
+    font-size: 12px;
+    color: #666;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.status.connected {
+    color: #4ecca3;
+    background: rgba(78, 204, 163, 0.1);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* About Button */
+.about-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid #555;
+    background: transparent;
+    color: #888;
+    font-size: 12px;
+    font-style: italic;
+    font-family: Georgia, serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.about-btn:hover {
+    border-color: #e94560;
+    color: #e94560;
+}
+
+/* About Modal */
+.about-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.about-overlay.hidden {
+    display: none;
+}
+
+.about-modal {
+    background: #22223a;
+    border: 1px solid #3a3a5e;
+    border-radius: 12px;
+    padding: 32px 40px;
+    max-width: 380px;
+    text-align: center;
+    position: relative;
+}
+
+.about-modal h2 {
+    font-size: 22px;
+    color: #e94560;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+}
+
+.about-modal p {
+    font-size: 13px;
+    color: #aaa;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.about-quote {
+    margin-top: 12px;
+    font-style: italic;
+    color: #666 !important;
+}
+
+.about-close {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 20px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.about-close:hover {
+    color: #e94560;
+}
+
+/* Start Button */
+.start-section {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.start-section.hidden {
+    display: none;
+}
+
+.start-btn {
+    background: #e94560;
+    color: #fff;
+    border: none;
+    padding: 14px 40px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background 0.2s ease;
+}
+
+.start-btn:hover {
+    background: #ff6b6b;
+}
+
+/* Browser hint */
+.browser-hint {
+    text-align: center;
+    font-size: 12px;
+    color: #555;
+    margin-top: -8px;
+}
+
+/* Sound Level Meter */
+.meter-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px;
+}
+
+.meter-label {
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.meter-bar-bg {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.meter-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: 4px;
+    background: #4ecca3;
+    transition: width 0.05s ease, background-color 0.1s ease;
+}
+
+.meter-debug {
+    font-size: 10px;
+    font-family: monospace;
+    color: #555;
+    min-width: 180px;
+    text-align: right;
+}
+
+/* Chord Display */
+.chord-section {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.chord-display {
+    font-size: 80px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    color: #fff;
+    min-height: 100px;
+    line-height: 1;
+    transition: color 0.15s ease;
+}
+
+.chord-display.silent {
+    color: #444;
+}
+
+.confidence-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.confidence-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.confidence-bar-bg {
+    width: 120px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.confidence-bar {
+    height: 100%;
+    background: #e94560;
+    border-radius: 2px;
+    transition: width 0.15s ease;
+}
+
+.confidence-value {
+    font-size: 12px;
+    color: #666;
+    font-family: monospace;
+    width: 32px;
+}
+
+/* Piano */
+.piano-section {
+    display: flex;
+    justify-content: center;
+}
+
+.piano {
+    position: relative;
+}
+
+.key-white {
+    position: absolute;
+    top: 0;
+    background: linear-gradient(to bottom, #f8f8f8, #e8e8e8);
+    border: 1px solid #b0b0b0;
+    border-top: none;
+    border-radius: 0 0 5px 5px;
+    z-index: 1;
+    cursor: default;
+    transition: background 0.1s ease;
+}
+
+.key-white.active {
+    background: linear-gradient(to bottom, #f07080, #e94560);
+    border-color: #c73a52;
+}
+
+.key-black {
+    position: absolute;
+    top: 0;
+    background: linear-gradient(to bottom, #3a3a4e, #1a1a2e);
+    border: 1px solid #111;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    z-index: 2;
+    cursor: default;
+    transition: background 0.1s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.key-black.active {
+    background: linear-gradient(to bottom, #ff8888, #ff6b6b);
+    border-color: #e94560;
+}
+
+/* Chroma Bars */
+.chroma-section {
+    display: flex;
+    justify-content: center;
+}
+
+.chroma-container {
+    width: 100%;
+    max-width: 500px;
+}
+
+.chroma-bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: 100px;
+    gap: 6px;
+}
+
+.chroma-bar {
+    flex: 1;
+    max-width: 36px;
+    min-height: 2px;
+    border-radius: 2px 2px 0 0;
+    transition: height 0.1s ease, background-color 0.1s ease;
+    background: #3a3a5e;
+}
+
+.chroma-labels {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.chroma-label {
+    flex: 1;
+    max-width: 36px;
+    text-align: center;
+    font-size: 10px;
+    font-family: monospace;
+    color: #666;
+}
+
+/* Footer */
+.web-footer {
+    text-align: center;
+    padding: 16px 0 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    margin-top: auto;
+}
+
+.web-footer p {
+    font-size: 11px;
+    color: #444;
+    margin-bottom: 4px;
+}
+
+.web-footer a {
+    color: #e94560;
+    text-decoration: none;
+}
+
+.web-footer a:hover {
+    color: #ff6b6b;
+}
+
+@media (max-width: 600px) {
+    .chord-display { font-size: 48px; min-height: 60px; }
+    .meter-debug { display: none; }
+    .meter-section { padding: 0; }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Rechordnizer</h1>
+            <div class="header-right">
+                <div id="status" class="status">Ready</div>
+                <button id="about-btn" class="about-btn">i</button>
+            </div>
+        </header>
+
+        <div id="about-overlay" class="about-overlay hidden">
+            <div class="about-modal">
+                <button id="about-close" class="about-close">&times;</button>
+                <h2>Rechordnizer</h2>
+                <p>Real-time piano chord recognition.</p>
+                <p>Open-source. Developed by Andreas Hadsel Opsvik and Claude.</p>
+                <p><a href="https://github.com/tanketom/rechordnizer" style="color: #e94560; text-decoration: none;">View on GitHub</a></p>
+                <p class="about-quote">Heia Ivar Aasen!</p>
+            </div>
+        </div>
+
+        <section id="start-section" class="start-section">
+            <button id="start-btn" class="start-btn">Start Listening</button>
+        </section>
+        <p id="browser-hint" class="browser-hint">Your browser will ask for microphone permission.</p>
+
+        <section class="meter-section">
+            <div class="meter-label">Input Level</div>
+            <div class="meter-bar-bg">
+                <div id="meter-bar" class="meter-bar"></div>
+            </div>
+            <div id="meter-debug" class="meter-debug">--</div>
+        </section>
+
+        <section class="chord-section">
+            <div id="chord-display" class="chord-display">N/C</div>
+            <div class="confidence-row">
+                <span class="confidence-label">Confidence</span>
+                <div class="confidence-bar-bg">
+                    <div id="confidence-bar" class="confidence-bar" style="width: 0%"></div>
+                </div>
+                <span id="confidence-value" class="confidence-value">0%</span>
+            </div>
+        </section>
+
+        <section class="piano-section">
+            <div id="piano" class="piano"></div>
+        </section>
+
+        <section class="chroma-section">
+            <div class="chroma-container">
+                <div class="chroma-bars" id="chroma-bars"></div>
+                <div class="chroma-labels" id="chroma-labels"></div>
+            </div>
+        </section>
+
+        <footer class="web-footer">
+            <p>Open-source. <a href="https://github.com/tanketom/rechordnizer">GitHub</a> · <a href="https://ting.bgo.city/rechordnizer.html">Download desktop app</a></p>
+        </footer>
+    </div>
+
+    <script>
 // ── Constants ────────────────────────────────────────────────
 
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -133,7 +596,6 @@ function computeChroma(frequencyData, chromaMap) {
         let sum = 0;
         for (let bin = 0; bin < frequencyData.length; bin++) {
             if (row[bin] > 0) {
-                // Convert dB to linear magnitude
                 const mag = Math.pow(10, frequencyData[bin] / 20);
                 sum += mag;
             }
@@ -153,6 +615,7 @@ let chromaMap = null;
 async function startAudio() {
     const statusEl = document.getElementById('status');
     const debugEl = document.getElementById('meter-debug');
+    const hintEl = document.getElementById('browser-hint');
     try {
         statusEl.textContent = 'Requesting mic...';
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -177,6 +640,7 @@ async function startAudio() {
         chromaMap = buildChromaMap(analyser.fftSize, audioContext.sampleRate);
 
         document.getElementById('start-section').classList.add('hidden');
+        hintEl.style.display = 'none';
         statusEl.textContent = `Listening (${audioContext.sampleRate} Hz)`;
         statusEl.classList.add('connected');
 
@@ -184,6 +648,8 @@ async function startAudio() {
     } catch (err) {
         statusEl.textContent = `Error: ${err.name}`;
         debugEl.textContent = err.message;
+        hintEl.textContent = 'Microphone access denied. Please allow it and try again.';
+        hintEl.style.color = '#e94560';
         console.error('Microphone error:', err);
     }
 }
@@ -195,19 +661,16 @@ function runAnalysisLoop() {
     const debugEl = document.getElementById('meter-debug');
 
     setInterval(() => {
-        // Get time-domain data for the level meter
         analyser.getFloatTimeDomainData(timeData);
         let rms = 0;
         for (let i = 0; i < timeData.length; i++) rms += timeData[i] * timeData[i];
         rms = Math.sqrt(rms / timeData.length);
         const rmsDB = rms > 0 ? 20 * Math.log10(rms) : -100;
 
-        // Level meter: map -60..0 dB to 0..100%
         const meterPct = Math.max(0, Math.min(100, ((rmsDB + 60) / 60) * 100));
         meterBar.style.width = `${meterPct}%`;
         meterBar.style.backgroundColor = meterPct > 80 ? '#e94560' : meterPct > 40 ? '#f0c040' : '#4ecca3';
 
-        // Get frequency data for chord detection
         analyser.getFloatFrequencyData(frequencyData);
         const peakDB = Math.max(...frequencyData);
 
@@ -246,9 +709,6 @@ function updateChordDisplay(chord, confidence) {
 
 function buildPiano() {
     const piano = document.getElementById('piano');
-    // One octave: which white key indices have a black key to their right
-    // C=0, D=1, E=2, F=3, G=4, A=5, B=6
-    // Black keys sit between: C-D (C#), D-E (D#), F-G (F#), G-A (G#), A-B (A#)
     const WHITE_NOTES_ORDER = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
     const BLACK_KEYS_AFTER = { 'C': 'C#', 'D': 'D#', 'F': 'F#', 'G': 'G#', 'A': 'A#' };
 
@@ -262,7 +722,6 @@ function buildPiano() {
     piano.style.width = `${totalWhite * KEY_W}px`;
     piano.style.height = `${KEY_H}px`;
 
-    // White keys first (flow left to right)
     for (let oct = 0; oct < NUM_OCTAVES; oct++) {
         for (let i = 0; i < 7; i++) {
             const note = WHITE_NOTES_ORDER[i];
@@ -277,7 +736,6 @@ function buildPiano() {
         }
     }
 
-    // Black keys on top, positioned between white keys
     for (let oct = 0; oct < NUM_OCTAVES; oct++) {
         for (let i = 0; i < 7; i++) {
             const whiteNote = WHITE_NOTES_ORDER[i];
@@ -350,3 +808,6 @@ document.getElementById('about-close').addEventListener('click', () => {
 aboutOverlay.addEventListener('click', (e) => {
     if (e.target === aboutOverlay) aboutOverlay.classList.add('hidden');
 });
+    </script>
+</body>
+</html>

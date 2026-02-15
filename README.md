@@ -2,7 +2,11 @@
 
 Real-time piano chord recognition from microphone input.
 
+**[Try it live](https://ting.bgo.city/rechordnizer.html)**
+
 Rechordnizer listens to your microphone, analyzes the audio using FFT-based chroma extraction, and identifies piano chords in real-time. It displays the detected chord name, highlights active notes on a piano keyboard, and shows a live chroma frequency visualization.
+
+Runs entirely in the browser — no install needed. Just open the page and allow microphone access.
 
 ## Features
 
@@ -13,6 +17,7 @@ Rechordnizer listens to your microphone, analyzes the audio using FFT-based chro
 - Piano keyboard visualization with highlighted active notes
 - Chroma bar display showing pitch class energy distribution
 - Input level meter
+- Single-file, zero dependencies — just HTML, CSS, and JavaScript
 
 ## How it works
 
@@ -22,35 +27,17 @@ Rechordnizer listens to your microphone, analyzes the audio using FFT-based chro
 4. The resulting chroma vector is matched against 144 pre-computed chord templates using cosine similarity
 5. A majority-vote smoother stabilizes predictions over a sliding window
 
-## Download
+## Self-hosting
 
-Pre-built installers are available in [Releases](https://github.com/tanketom/rechordnizer/releases):
-
-- **macOS:** [Rechordnizer-1.0.0-arm64.dmg](https://github.com/tanketom/rechordnizer/releases/download/v1.0.0/Rechordnizer-1.0.0-arm64.dmg)
-- **Windows:** [Rechordnizer Setup 1.0.0.exe](https://github.com/tanketom/rechordnizer/releases/download/v1.0.0/Rechordnizer.Setup.1.0.0.exe)
-- **Linux:** [Rechordnizer-1.0.0-arm64.AppImage](https://github.com/tanketom/rechordnizer/releases/download/v1.0.0/Rechordnizer-1.0.0-arm64.AppImage) and [rechordnizer_1.0.0_arm64.deb](https://github.com/tanketom/rechordnizer/releases/download/v1.0.0/rechordnizer_1.0.0_arm64.deb)
-
-## Build from source
-
-Requires [Node.js](https://nodejs.org/) (v18+).
+The entire app is a single `index.html` file. Serve it from any web server, or open it directly in a browser.
 
 ```bash
 git clone https://github.com/tanketom/rechordnizer.git
 cd rechordnizer
-npm install
-npm start
+open index.html
 ```
 
-### Build installers
-
-```bash
-npm run dist        # All platforms
-npm run dist:mac    # macOS .dmg
-npm run dist:win    # Windows .exe
-npm run dist:linux  # Linux AppImage + .deb
-```
-
-Installers are output to the `dist/` directory.
+> Note: Microphone access requires HTTPS in most browsers. For local development, `localhost` or `file://` will work.
 
 ## Supported chord types
 

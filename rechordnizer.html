@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rechordnizer — Real-time Piano Chord Recognition</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #1a1a2e;
+            color: #eee;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 80px 20px 60px;
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            font-weight: 700;
+            color: #e94560;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .hero .tagline {
+            font-size: 20px;
+            color: #aaa;
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        .launch-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #e94560;
+            color: #fff;
+            text-decoration: none;
+            padding: 16px 40px;
+            border-radius: 8px;
+            font-size: 17px;
+            font-weight: 600;
+            transition: background 0.2s;
+            letter-spacing: 0.5px;
+        }
+
+        .launch-btn:hover {
+            background: #ff6b6b;
+        }
+
+        .launch-hint {
+            margin-top: 14px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        /* Piano animation */
+        .piano-demo {
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+            padding: 40px 0;
+        }
+
+        .demo-key {
+            width: 28px;
+            height: 100px;
+            background: linear-gradient(to bottom, #f8f8f8, #e8e8e8);
+            border: 1px solid #b0b0b0;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            transition: background 0.3s;
+        }
+
+        .demo-key.black {
+            width: 20px;
+            height: 65px;
+            background: linear-gradient(to bottom, #3a3a4e, #1a1a2e);
+            border-color: #111;
+            margin: 0 -10px;
+            z-index: 1;
+            position: relative;
+        }
+
+        .demo-key.lit {
+            background: linear-gradient(to bottom, #f07080, #e94560);
+        }
+
+        .demo-key.black.lit {
+            background: linear-gradient(to bottom, #ff8888, #ff6b6b);
+        }
+
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        section {
+            margin-bottom: 56px;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #e94560;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Features */
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .feature {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 24px;
+        }
+
+        .feature h3 {
+            font-size: 15px;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .feature p {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.5;
+        }
+
+        /* How it works */
+        .steps {
+            counter-reset: step;
+        }
+
+        .step {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+
+        .step-num {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            background: rgba(233, 69, 96, 0.15);
+            color: #e94560;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .step p {
+            color: #bbb;
+            font-size: 14px;
+            padding-top: 5px;
+        }
+
+        .step code {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #ddd;
+        }
+
+        /* Chord table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        td {
+            padding: 10px 16px;
+            font-size: 14px;
+            color: #bbb;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        td:first-child {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        td:nth-child(2) {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            color: #e94560;
+        }
+
+        td:nth-child(3) {
+            font-family: monospace;
+            font-size: 13px;
+            color: #888;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 48px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            margin-top: 20px;
+        }
+
+        footer p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        footer .quote {
+            font-style: italic;
+            color: #555;
+        }
+
+        footer a {
+            color: #e94560;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: #ff6b6b;
+        }
+
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 36px; }
+            .hero .tagline { font-size: 16px; }
+            .features-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <h1>Rechordnizer</h1>
+        <p class="tagline">Real-time piano chord recognition from microphone input. Play a chord, see it identified instantly.</p>
+
+        <div class="piano-demo" id="piano-demo"></div>
+
+        <a href="rechordnizer/index.html" class="launch-btn">&#9654; Open Rechordnizer</a>
+        <p class="launch-hint">Runs in your browser. No install needed.</p>
+    </div>
+
+    <div class="container">
+
+        <section>
+            <h2>Features</h2>
+            <div class="features-grid">
+                <div class="feature">
+                    <h3>Real-time Detection</h3>
+                    <p>Chord analysis at ~10 Hz using FFT-based chroma extraction with cosine similarity matching.</p>
+                </div>
+                <div class="feature">
+                    <h3>144 Chord Templates</h3>
+                    <p>12 root notes across 12 chord types: major, minor, 7th, maj7, m7, dim, aug, sus2, sus4, dim7, m(maj7), aug7.</p>
+                </div>
+                <div class="feature">
+                    <h3>Piano Visualization</h3>
+                    <p>Active notes highlighted on a keyboard display, with a chroma bar showing pitch class energy distribution.</p>
+                </div>
+                <div class="feature">
+                    <h3>Zero Install</h3>
+                    <p>Runs entirely in the browser using the Web Audio API. No downloads, no plugins, no dependencies.</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <p>Microphone audio is captured via the Web Audio API</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <p>An <code>AnalyserNode</code> computes the FFT magnitude spectrum</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <p>FFT bins are mapped to 12 pitch classes (C through B) using the MIDI frequency formula</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <p>The chroma vector is matched against 144 pre-computed chord templates using cosine similarity</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">5</div>
+                    <p>A majority-vote smoother stabilizes predictions over a sliding window</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Supported Chord Types</h2>
+            <table>
+                <thead>
+                    <tr><th>Type</th><th>Example</th><th>Intervals</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Major</td><td>C</td><td>0, 4, 7</td></tr>
+                    <tr><td>Minor</td><td>Cm</td><td>0, 3, 7</td></tr>
+                    <tr><td>Dominant 7th</td><td>C7</td><td>0, 4, 7, 10</td></tr>
+                    <tr><td>Major 7th</td><td>Cmaj7</td><td>0, 4, 7, 11</td></tr>
+                    <tr><td>Minor 7th</td><td>Cm7</td><td>0, 3, 7, 10</td></tr>
+                    <tr><td>Diminished</td><td>Cdim</td><td>0, 3, 6</td></tr>
+                    <tr><td>Augmented</td><td>Caug</td><td>0, 4, 8</td></tr>
+                    <tr><td>Suspended 2nd</td><td>Csus2</td><td>0, 2, 7</td></tr>
+                    <tr><td>Suspended 4th</td><td>Csus4</td><td>0, 5, 7</td></tr>
+                    <tr><td>Diminished 7th</td><td>Cdim7</td><td>0, 3, 6, 9</td></tr>
+                    <tr><td>Minor-major 7th</td><td>Cm(maj7)</td><td>0, 3, 7, 11</td></tr>
+                    <tr><td>Augmented 7th</td><td>Caug7</td><td>0, 4, 8, 10</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+    </div>
+
+    <footer>
+        <p>Open-source, MIT License. Developed by Andreas Hadsel Opsvik and Claude.</p>
+        <p><a href="https://github.com/tanketom/rechordnizer">View on GitHub</a></p>
+        <p class="quote">Heia Ivar Aasen!</p>
+    </footer>
+
+    <script>
+        // Animated piano keys in the hero
+        const demo = document.getElementById('piano-demo');
+        const layout = [
+            'w','b','w','b','w','w','b','w','b','w','b','w',
+            'w','b','w','b','w','w','b','w','b','w','b','w'
+        ];
+        const keys = [];
+        layout.forEach(type => {
+            const key = document.createElement('div');
+            key.className = 'demo-key' + (type === 'b' ? ' black' : '');
+            demo.appendChild(key);
+            keys.push(key);
+        });
+
+        const chords = [
+            [0, 4, 7],       // C
+            [5, 9, 12],      // F
+            [7, 11, 14],     // G
+            [9, 12, 16],     // Am
+        ];
+        let chordIdx = 0;
+
+        function animateChord() {
+            keys.forEach(k => k.classList.remove('lit'));
+            const chord = chords[chordIdx % chords.length];
+            chord.forEach(i => { if (keys[i]) keys[i].classList.add('lit'); });
+            chordIdx++;
+        }
+
+        animateChord();
+        setInterval(animateChord, 1500);
+    </script>
+
+</body>
+</html>
